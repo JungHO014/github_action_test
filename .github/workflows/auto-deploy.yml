@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: dev
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -25,17 +26,29 @@ jobs:
       - name: Build
         run: yarn build
 
-      - name: Push to dev_server
+      - name: Configure Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -b dev_server
+
+      - name: Deploy to dev_server
+        run: |
+          # Create and switch to dev_server branch
+          git checkout -B dev_server
+          # Copy all files from dev branch
+          git reset --hard dev
+          # Add built files
           git add dist -f
-          git commit -m "Auto deploy to dev_server"
+          git commit -m "Auto deploy: Copy from dev with built files"
           git push origin dev_server -f
 
-      - name: Push to main
+      - name: Deploy to main
         run: |
+          # Switch to main branch
           git checkout main
-          git merge dev --no-ff -m "Merge dev into main"
-          git push origin main
+          # Reset main to match dev branch
+          git reset --hard dev
+          # Add built files
+          git add dist -f
+          git commit -m "Auto deploy: Sync with dev and add built files"
+          git push origin main -f
