@@ -66,15 +66,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build for main
-        run: yarn build
-
       - name: Deploy to main
         run: |
+          # Save dist folder
+          cp -r dist dist_backup
           # Switch to main branch
           git checkout main
           # Reset main to match dev branch
           git reset --hard dev
+          # Restore dist folder
+          rm -rf dist
+          mv dist_backup dist
           # Add built files
           git add dist -f
           git commit -m "Auto deploy: Sync with dev and add built files"
