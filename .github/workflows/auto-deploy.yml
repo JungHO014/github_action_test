@@ -66,6 +66,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build for main
+        run: yarn build
+
       - name: Deploy to main
         run: |
           # Switch to main branch
