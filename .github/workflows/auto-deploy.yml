@@ -1,0 +1,41 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Push to dev_server
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -b dev_server
+          git add dist -f
+          git commit -m "Auto deploy to dev_server"
+          git push origin dev_server -f
+
+      - name: Push to main
+        run: |
+          git checkout main
+          git merge dev --no-ff -m "Merge dev into main"
+          git push origin main
